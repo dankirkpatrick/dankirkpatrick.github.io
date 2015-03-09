@@ -42,43 +42,10 @@ Compare this to the standard delta endstop calibration provided by the Smoothiew
 bool DeltaCalibrationStrategy::calibrate_delta_endstops(Gcode *gcode)
 {
     float target = 0.03F;
-    if(gcode->has_letter('I')) target = gcode->get_value('I'); // override default target
-    if(gcode->has_letter('J')) this->probe_radius = gcode->get_value('J'); // override default probe radius
 
-    bool keep = false;
-    if(gcode->has_letter('K')) keep = true; // keep current settings
-
-    gcode->stream->printf("Calibrating Endstops: target %fmm, radius %fmm\n", target, this->probe_radius);
-
-    // get probe points
-    float t1x, t1y, t2x, t2y, t3x, t3y;
-    std::tie(t1x, t1y, t2x, t2y, t3x, t3y) = getCoordinates(this->probe_radius);
-
-    float trimx = 0.0F, trimy = 0.0F, trimz = 0.0F;
-    if(!keep) {
-        // zero trim values
-        if(!set_trim(0, 0, 0, gcode->stream)) return false;
-
-    } else {
-        // get current trim, and continue from that
-        if (get_trim(trimx, trimy, trimz)) {
-            gcode->stream->printf("Current Trim X: %f, Y: %f, Z: %f\r\n", trimx, trimy, trimz);
-
-        } else {
-            gcode->stream->printf("Could not get current trim, are endstops enabled?\n");
-            return false;
-        }
-    }
-
-    // home
-    zprobe->home();
-
-    // find bed, run at fast rate
-    int s;
-    if(!zprobe->run_probe(s, true)) return false;
-
-    float bedht = zprobe->zsteps_to_mm(s) - zprobe->getProbeHeight(); // distance to move from home to 5mm above bed
-    gcode->stream->printf("Bed ht is %f mm\n", bedht);
+    /*
+    A bunch of code I've left out that finds bedht and initial trim
+    */
 
     // move to start position
     zprobe->home();
