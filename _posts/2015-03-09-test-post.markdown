@@ -4,7 +4,7 @@ title:  "My First Post!"
 date:   2015-03-09 08:30:06
 categories: test update
 ---
-Let's try a few things.  First, some c++ code:
+Let's try a few things.  First, some c++ code.  Following is my port of Rich Cattell's delta endstop calibration code to the Smootheware firmware:
 
 {% highlight cpp %}
 bool DeltaCalibrationStrategy::rc_calibrate_delta_endstops(Gcode *gcode, bool keep, float target, float bedht)
@@ -36,22 +36,126 @@ bool DeltaCalibrationStrategy::rc_calibrate_delta_endstops(Gcode *gcode, bool ke
 }
 {% endhighlight %}
 
-You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. You can rebuild the site in many different ways, but the most common way is to run `jekyll serve`, which launches a web server and auto-regenerates your site when a file is updated.
+Compare this to the standard delta endstop calibration provided by the Smoothieware firmware:
 
-To add new posts, simply add a file in the `_posts` directory that follows the convention `YYYY-MM-DD-name-of-post.ext` and includes the necessary front matter. Take a look at the source for this post to get an idea about how it works.
+{% highlight cpp %}
+bool DeltaCalibrationStrategy::calibrate_delta_endstops(Gcode *gcode)
+{
+    float target = 0.03F;
+    if(gcode->has_letter('I')) target = gcode->get_value('I'); // override default target
+    if(gcode->has_letter('J')) this->probe_radius = gcode->get_value('J'); // override default probe radius
 
-Jekyll also offers powerful support for code snippets:
+    bool keep = false;
+    if(gcode->has_letter('K')) keep = true; // keep current settings
 
-{% highlight ruby %}
-def print_hi(name)
-  puts "Hi, #{name}"
-end
-print_hi('Tom')
-#=> prints 'Hi, Tom' to STDOUT.
+    gcode->stream->printf("Calibrating Endstops: target %fmm, radius %fmm\n", target, this->probe_radius);
+
+    // get probe points
+    float t1x, t1y, t2x, t2y, t3x, t3y;
+    std::tie(t1x, t1y, t2x, t2y, t3x, t3y) = getCoordinates(this->probe_radius);
+
+    float trimx = 0.0F, trimy = 0.0F, trimz = 0.0F;
+    if(!keep) {
+        // zero trim values
+        if(!set_trim(0, 0, 0, gcode->stream)) return false;
+
+    } else {
+        // get current trim, and continue from that
+        if (get_trim(trimx, trimy, trimz)) {
+            gcode->stream->printf("Current Trim X: %f, Y: %f, Z: %f\r\n", trimx, trimy, trimz);
+
+        } else {
+            gcode->stream->printf("Could not get current trim, are endstops enabled?\n");
+            return false;
+        }
+    }
+
+    // home
+    zprobe->home();
+
+    // find bed, run at fast rate
+    int s;
+    if(!zprobe->run_probe(s, true)) return false;
+
+    float bedht = zprobe->zsteps_to_mm(s) - zprobe->getProbeHeight(); // distance to move from home to 5mm above bed
+    gcode->stream->printf("Bed ht is %f mm\n", bedht);
+
+    // move to start position
+    zprobe->home();
+    zprobe->coordinated_move(NAN, NAN, -bedht, zprobe->getFastFeedrate(), true); // do a relative move from home to the point above the bed
+
+    // get initial probes
+    // probe the base of the X tower
+    if(!zprobe->doProbeAt(s, t1x, t1y)) return false;
+    float t1z = zprobe->zsteps_to_mm(s);
+    gcode->stream->printf("T1-0 Z:%1.4f C:%d\n", t1z, s);
+
+    // probe the base of the Y tower
+    if(!zprobe->doProbeAt(s, t2x, t2y)) return false;
+    float t2z = zprobe->zsteps_to_mm(s);
+    gcode->stream->printf("T2-0 Z:%1.4f C:%d\n", t2z, s);
+
+    // probe the base of the Z tower
+    if(!zprobe->doProbeAt(s, t3x, t3y)) return false;
+    float t3z = zprobe->zsteps_to_mm(s);
+    gcode->stream->printf("T3-0 Z:%1.4f C:%d\n", t3z, s);
+
+    float trimscale = 1.2522F; // empirically determined
+
+    auto mm = std::minmax({t1z, t2z, t3z});
+    if((mm.second - mm.first) <= target) {
+        gcode->stream->printf("trim already set within required parameters: delta %f\n", mm.second - mm.first);
+        return true;
+    }
+
+    // set trims to worst case so we always have a negative trim
+    trimx += (mm.first - t1z) * trimscale;
+    trimy += (mm.first - t2z) * trimscale;
+    trimz += (mm.first - t3z) * trimscale;
+
+    for (int i = 1; i <= 10; ++i) {
+        // set trim
+        if(!set_trim(trimx, trimy, trimz, gcode->stream)) return false;
+
+        // home and move probe to start position just above the bed
+        zprobe->home();
+        zprobe->coordinated_move(NAN, NAN, -bedht, zprobe->getFastFeedrate(), true); // do a relative move from home to the point above the bed
+
+        // probe the base of the X tower
+        if(!zprobe->doProbeAt(s, t1x, t1y)) return false;
+        t1z = zprobe->zsteps_to_mm(s);
+        gcode->stream->printf("T1-%d Z:%1.4f C:%d\n", i, t1z, s);
+
+        // probe the base of the Y tower
+        if(!zprobe->doProbeAt(s, t2x, t2y)) return false;
+        t2z = zprobe->zsteps_to_mm(s);
+        gcode->stream->printf("T2-%d Z:%1.4f C:%d\n", i, t2z, s);
+
+        // probe the base of the Z tower
+        if(!zprobe->doProbeAt(s, t3x, t3y)) return false;
+        t3z = zprobe->zsteps_to_mm(s);
+        gcode->stream->printf("T3-%d Z:%1.4f C:%d\n", i, t3z, s);
+
+        mm = std::minmax({t1z, t2z, t3z});
+        if((mm.second - mm.first) <= target) {
+            gcode->stream->printf("trim set to within required parameters: delta %f\n", mm.second - mm.first);
+            break;
+        }
+
+        // set new trim values based on min difference
+        trimx += (mm.first - t1z) * trimscale;
+        trimy += (mm.first - t2z) * trimscale;
+        trimz += (mm.first - t3z) * trimscale;
+
+        // flush the output
+        THEKERNEL->call_event(ON_IDLE);
+    }
+
+    if((mm.second - mm.first) > target) {
+        gcode->stream->printf("WARNING: trim did not resolve to within required parameters: delta %f\n", mm.second - mm.first);
+    }
+
+    return true;
+}
 {% endhighlight %}
 
-Check out the [Jekyll docs][jekyll] for more info on how to get the most out of Jekyll. File all bugs/feature requests at [Jekyll’s GitHub repo][jekyll-gh]. If you have questions, you can ask them on [Jekyll’s dedicated Help repository][jekyll-help].
-
-[jekyll]:      http://jekyllrb.com
-[jekyll-gh]:   https://github.com/jekyll/jekyll
-[jekyll-help]: https://github.com/jekyll/jekyll-help
