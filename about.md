@@ -8,7 +8,7 @@ I'm Dan Kirkpatrick.  This blog is intended to document a number of the projects
 
 - The PurplePrintr
 
-  Designed by my good friend, Macaba, this is a Delta 3D printer built using standard OpenBuilds V-Slot extrusion.  The effector and delta rods are connected using magnet.  The effector has a rather unique Z probe.
+  Designed by my good friend, Macaba, this is a Delta 3D printer built using standard OpenBuilds V-Slot extrusion.  The effector and delta rods are connected using magnets.  The effector has a rather unique Z probe.  There are loads of other features that make this, imho, the best affordable 3D printer available.
 
   - Porting Rich Cattell's autocalibration code
 
