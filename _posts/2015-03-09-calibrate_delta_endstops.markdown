@@ -1,8 +1,8 @@
 ---
 layout: post
-title:  "My First Post!"
+title:  "Calibrate Delta Endstops"
 date:   2015-03-09 08:30:06
-categories: test update
+categories: cattell delta calibration update
 ---
 Let's try a few things.  First, some c++ code.  Following is my port of Rich Cattell's delta endstop calibration code to the Smootheware firmware:
 
