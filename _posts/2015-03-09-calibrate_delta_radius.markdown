@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Calibrate Delta Radius"
-date:   2015-03-09 08:30:06
+date:   2015-03-09 08:48:06
 categories: cattell delta calibration update
 ---
 Following is my port of Rich Cattell's delta radius calibration code to the Smootheware firmware:
