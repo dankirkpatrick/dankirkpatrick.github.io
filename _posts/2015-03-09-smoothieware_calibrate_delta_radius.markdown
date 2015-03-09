@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Calibrate Delta Radius"
+title:  "Smoothieware: Calibrate Delta Radius"
 date:   2015-03-09 08:48:06
 categories: cattell smoothieware delta calibration autocalibration update
 ---
