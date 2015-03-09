@@ -1,8 +1,8 @@
 ---
 layout: post
-title:  "Calibrate Delta Endstops"
+title:  "Smoothieware: Calibrate Delta Endstops"
 date:   2015-03-09 08:30:06
-categories: cattell delta calibration update
+categories: cattell smoothieware delta calibration autocalibration update
 ---
 Let's try a few things.  First, some c++ code.  Following is my port of Rich Cattell's delta endstop calibration code to the Smootheware firmware:
 

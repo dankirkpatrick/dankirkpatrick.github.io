@@ -2,7 +2,7 @@
 layout: post
 title:  "Calibrate Delta Radius"
 date:   2015-03-09 08:48:06
-categories: cattell delta calibration update
+categories: cattell smoothieware delta calibration autocalibration update
 ---
 Following is my port of Rich Cattell's delta radius calibration code to the Smootheware firmware.  Note that I follow RC's approach of probing the center, comparing the value to an average of the towers, when calibrating.  The Smoothieware firmware instead probes the center once and then probes the tower positions, comparing the average to the value of the center, when calibrating:
 
