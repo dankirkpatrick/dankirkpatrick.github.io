@@ -4,7 +4,7 @@ title:  "Calibrate Delta Radius"
 date:   2015-03-09 08:48:06
 categories: cattell delta calibration update
 ---
-Following is my port of Rich Cattell's delta radius calibration code to the Smootheware firmware:
+Following is my port of Rich Cattell's delta radius calibration code to the Smootheware firmware.  Note that I follow RC's approach of probing the center, comparing the value to an average of the towers, when calibrating.  The Smoothieware firmware instead probes the center once and then probes the tower positions, comparing the average to the value of the center, when calibrating:
 
 {% highlight cpp %}
 bool DeltaCalibrationStrategy::rc_calibrate_delta_radius(Gcode *gcode, bool keep, float target, float bedht)
@@ -138,3 +138,64 @@ bool DeltaCalibrationStrategy::calibrate_delta_radius(Gcode *gcode)
 }
 {% endhighlight %}
 
+Finally, compare this to Rich Cattell's original modifications to the Marlin Firmware.  Note that, with RC's code, after adjusting the endstops, the center should read '0'.  With the Smoothieware approach, the center probe likely will read a non-zero value and must be compared to the average value of the tower probes.:
+
+{% highlight c %}
+int adj_deltaradius() 
+{
+  float adj_r;
+  float prev_c;
+  int c_nochange_count = 0;
+  float nochange_r;
+  
+  //if ((bed_level_c >= -ac_prec) and (bed_level_c <= ac_prec))
+  if ((bed_level_c >= -ac_prec/2) and (bed_level_c <= ac_prec/2))
+    {
+    SERIAL_ECHOLN("Delta Radius OK");
+    return 0;
+    }
+  else
+    {
+    SERIAL_ECHOLN("Adjusting Delta Radius");
+    //set inital direction and magnitude for delta radius adjustment
+    adj_r = 0.1;
+    if (bed_level_c > 0) adj_r = -0.1;
+  
+    bed_safe_z = 20;
+    
+    do
+      {
+      delta_radius += adj_r;
+      set_delta_constants();
+    
+      prev_c = bed_level_c;
+      bed_level_c = probe_bed(0.0, 0.0);
+
+      //Show progress
+      SERIAL_ECHO("r:");
+      SERIAL_PROTOCOL_F(delta_radius, 4);
+      SERIAL_ECHO(" (adj:");
+      SERIAL_PROTOCOL_F(adj_r,4);
+      SERIAL_ECHO(") c:");
+      SERIAL_PROTOCOL_F(bed_level_c, 4);
+      SERIAL_ECHOLN("");
+   
+      //Adjust delta radius
+      if (((adj_r > 0) and (bed_level_c < prev_c)) or ((adj_r < 0) and (bed_level_c > prev_c))) adj_r = -(adj_r / 2);
+
+      //Count iterations with no change to c probe point
+      if (bed_level_c == prev_c) c_nochange_count ++;
+      if (c_nochange_count == 1) nochange_r = delta_radius;
+
+      } while(((bed_level_c < -ac_prec) or (bed_level_c > ac_prec)) and (c_nochange_count < 3));
+    
+      if (c_nochange_count > 0) 
+        {
+        delta_radius = nochange_r;
+        set_delta_constants();
+        bed_safe_z = 20;
+        }
+    return 1;
+    }
+}
+{% endhighlight %}
