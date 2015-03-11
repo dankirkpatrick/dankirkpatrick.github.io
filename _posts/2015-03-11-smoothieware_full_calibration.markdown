@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Smoothieware: Full Calibration"
-date:   2015-03-09 08:30:06
+date:   2015-03-11 10:30:00
 categories: cattell smoothieware delta calibration autocalibration update
 ---
 Here's my port of Rich Cattell's Marlin delta calibration code to Smoothieware.  The first bit, up to the nested do..while loops, probes the bed to calculate bedht (actual bed height + a probe distance from settings, usually 5-20mm).  This is then passed to all subsequent functions.
