@@ -6,7 +6,7 @@ categories: cattell smoothieware delta calibration autocalibration update
 ---
 Here's my port of Rich Cattell's Marlin delta calibration code to Smoothieware.  The first bit, up to the nested do..while loops, probes the bed to calculate bedht (actual bed height + a probe distance from settings, usually 5-20mm).  This is then passed to all subsequent functions.
 
-The inner do..while loop repeatedly [calibrates endstops](% post_url 2015-03-09-smoothieware-calibrate-delta-endstops %) and the [delta radius](% post_url 2015-03-09-smoothieware-calibrate-delta-radius %) until the center and tower probes read the same value, within the target tolerance.  See my related posts for details about those methods.
+The inner do..while loop repeatedly [calibrates endstops](../../2015-03-09-smoothieware-calibrate-delta-endstops.html) and the [delta radius](../../2015-03-09-smoothieware-calibrate-delta-radius.html) until the center and tower probes read the same value, within the target tolerance.  See my related posts for details about those methods.
 
 The outer do..while loop repeatedly calibrates the towers and diagonal rod length, stopping when all probe measurements (center, towers, and tower opposites) all measure the same value, within the target tolerance.  See my related posts for more details about the tower calibration and calibration of the diagonal rod length. 
 
