@@ -7,15 +7,15 @@ categories: cattell smoothieware delta calibration autocalibration update
 Let's try a few things.  First, some c++ code.  Following is my port of Rich Cattell's delta endstop calibration code to the Smootheware firmware:
 
 {% highlight cpp %}
-bool DeltaCalibrationStrategy::rc_calibrate_delta_endstops(Gcode *gcode, bool keep, float target, float bedht)
+float DeltaCalibrationStrategy::rc_calibrate_delta_endstops(Gcode *gcode, bool keep, float target, float bedht)
 {
     float trimx = 0.0F, trimy = 0.0F, trimz = 0.0F;
-    if (!get_trim(trimx, trimy, trimz)) return false;
+    if (!get_trim(trimx, trimy, trimz)) return NAN;
 
     float t1z, t2z, t3z;
     do {
         // set trim
-        if(!set_trim(trimx, trimy, trimz, gcode->stream)) return false;
+        if(!set_trim(trimx, trimy, trimz, gcode->stream)) return NAN;
         THEKERNEL->call_event(ON_IDLE);
 
         // move to start position
@@ -32,97 +32,7 @@ bool DeltaCalibrationStrategy::rc_calibrate_delta_endstops(Gcode *gcode, bool ke
         }
     } while (abs(t1z) < target && abs(t2z) < target && abs(t3z) < target);
 
-    return true;
-}
-{% endhighlight %}
-
-Compare this to the standard delta endstop calibration provided by the Smoothieware firmware.  Mine's a lot more simple, in large part due to my introduction of the probeBedTowers() method.  Also, note that Smoothieware always applies a multiplier when correcting trim (1.2522), and that it runs 10 times (always).  Obviously, this should converge around the proper trim level, but it seems less effective than RC's code:
-
-{% highlight cpp %}
-bool DeltaCalibrationStrategy::calibrate_delta_endstops(Gcode *gcode)
-{
-    float target = 0.03F;
-
-    /*
-    A bunch of code I've left out that finds bedht and initial trim
-    */
-
-    // move to start position
-    zprobe->home();
-    zprobe->coordinated_move(NAN, NAN, -bedht, zprobe->getFastFeedrate(), true); // do a relative move from home to the point above the bed
-
-    // get initial probes
-    // probe the base of the X tower
-    if(!zprobe->doProbeAt(s, t1x, t1y)) return false;
-    float t1z = zprobe->zsteps_to_mm(s);
-    gcode->stream->printf("T1-0 Z:%1.4f C:%d\n", t1z, s);
-
-    // probe the base of the Y tower
-    if(!zprobe->doProbeAt(s, t2x, t2y)) return false;
-    float t2z = zprobe->zsteps_to_mm(s);
-    gcode->stream->printf("T2-0 Z:%1.4f C:%d\n", t2z, s);
-
-    // probe the base of the Z tower
-    if(!zprobe->doProbeAt(s, t3x, t3y)) return false;
-    float t3z = zprobe->zsteps_to_mm(s);
-    gcode->stream->printf("T3-0 Z:%1.4f C:%d\n", t3z, s);
-
-    float trimscale = 1.2522F; // empirically determined
-
-    auto mm = std::minmax({t1z, t2z, t3z});
-    if((mm.second - mm.first) <= target) {
-        gcode->stream->printf("trim already set within required parameters: delta %f\n", mm.second - mm.first);
-        return true;
-    }
-
-    // set trims to worst case so we always have a negative trim
-    trimx += (mm.first - t1z) * trimscale;
-    trimy += (mm.first - t2z) * trimscale;
-    trimz += (mm.first - t3z) * trimscale;
-
-    for (int i = 1; i <= 10; ++i) {
-        // set trim
-        if(!set_trim(trimx, trimy, trimz, gcode->stream)) return false;
-
-        // home and move probe to start position just above the bed
-        zprobe->home();
-        zprobe->coordinated_move(NAN, NAN, -bedht, zprobe->getFastFeedrate(), true); // do a relative move from home to the point above the bed
-
-        // probe the base of the X tower
-        if(!zprobe->doProbeAt(s, t1x, t1y)) return false;
-        t1z = zprobe->zsteps_to_mm(s);
-        gcode->stream->printf("T1-%d Z:%1.4f C:%d\n", i, t1z, s);
-
-        // probe the base of the Y tower
-        if(!zprobe->doProbeAt(s, t2x, t2y)) return false;
-        t2z = zprobe->zsteps_to_mm(s);
-        gcode->stream->printf("T2-%d Z:%1.4f C:%d\n", i, t2z, s);
-
-        // probe the base of the Z tower
-        if(!zprobe->doProbeAt(s, t3x, t3y)) return false;
-        t3z = zprobe->zsteps_to_mm(s);
-        gcode->stream->printf("T3-%d Z:%1.4f C:%d\n", i, t3z, s);
-
-        mm = std::minmax({t1z, t2z, t3z});
-        if((mm.second - mm.first) <= target) {
-            gcode->stream->printf("trim set to within required parameters: delta %f\n", mm.second - mm.first);
-            break;
-        }
-
-        // set new trim values based on min difference
-        trimx += (mm.first - t1z) * trimscale;
-        trimy += (mm.first - t2z) * trimscale;
-        trimz += (mm.first - t3z) * trimscale;
-
-        // flush the output
-        THEKERNEL->call_event(ON_IDLE);
-    }
-
-    if((mm.second - mm.first) > target) {
-        gcode->stream->printf("WARNING: trim did not resolve to within required parameters: delta %f\n", mm.second - mm.first);
-    }
-
-    return true;
+    return (t1z + t2z + t3z) / 3;
 }
 {% endhighlight %}
 
