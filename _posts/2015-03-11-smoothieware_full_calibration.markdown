@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Smoothieware: Calibrate"
+title:  "Smoothieware: Full Calibration"
 date:   2015-03-09 08:30:06
 categories: cattell smoothieware delta calibration autocalibration update
 ---
