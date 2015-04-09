@@ -47,9 +47,9 @@ The Full Stack
 
 ## Syndicate Controller
 * [Meteor](https://www.meteor.com/)
-* * [V8](https://code.google.com/p/v8/) + [Node](https://nodejs.org/)/[IO.js](https://iojs.org/en/index.html)
-* * [MongoDB](https://www.mongodb.org/)
-* * [Blaze](https://www.meteor.com/blaze)
+  * [V8](https://code.google.com/p/v8/) + [Node](https://nodejs.org/)/[IO.js](https://iojs.org/en/index.html)
+  * [MongoDB](https://www.mongodb.org/)
+  * [Blaze](https://www.meteor.com/blaze)
 * [Telescope](http://www.telescopeapp.org/), with modifications
 * [Docker](https://www.docker.com/)
 
@@ -63,9 +63,9 @@ The Full Stack
 
 ## Data Server
 * [Meteor](https://www.meteor.com/)
-* * [V8](https://code.google.com/p/v8/) + [Node](https://nodejs.org/)/[IO.js](https://iojs.org/en/index.html)
-* * [MongoDB](https://www.mongodb.org/)
-* * [Blaze](https://www.meteor.com/blaze)
+  * [V8](https://code.google.com/p/v8/) + [Node](https://nodejs.org/)/[IO.js](https://iojs.org/en/index.html)
+  * [MongoDB](https://www.mongodb.org/)
+  * [Blaze](https://www.meteor.com/blaze)
 * [PostgreSQL](http://www.postgresql.org/)
 * [Experiment](https://github.com/reactjs/react-meteor) with [ReactJS](https://facebook.github.io/react/) as a replacement for Blaze for constructing the View
 * [REST API](http://en.wikipedia.org/wiki/Representational_state_transfer)
