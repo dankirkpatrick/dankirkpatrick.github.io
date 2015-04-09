@@ -44,15 +44,16 @@ I do have some concerns about Meteor that I hope to address during this developm
 
 The Full Stack
 --------------
-### Syndicate Controller
+
+## Syndicate Controller
 * [Meteor](https://www.meteor.com/)
-** [V8](https://code.google.com/p/v8/) + [Node](https://nodejs.org/)/[IO.js](https://iojs.org/en/index.html)
-** [MongoDB](https://www.mongodb.org/)
-** [Blaze](https://www.meteor.com/blaze)
+* * [V8](https://code.google.com/p/v8/) + [Node](https://nodejs.org/)/[IO.js](https://iojs.org/en/index.html)
+* * [MongoDB](https://www.mongodb.org/)
+* * [Blaze](https://www.meteor.com/blaze)
 * [Telescope](http://www.telescopeapp.org/), with modifications
 * [Docker](https://www.docker.com/)
 
-### Web Scraper
+## Web Scraper
 * [V8](https://code.google.com/p/v8/) + [Node](https://nodejs.org/)/[IO.js](https://iojs.org/en/index.html)
 * [Phantomjs](http://phantomjs.org/)
 * [Cheeriojs](https://github.com/cheeriojs/cheerio)
@@ -60,11 +61,11 @@ The Full Stack
 * [REST API](http://en.wikipedia.org/wiki/Representational_state_transfer)
 * [Docker](https://www.docker.com/)
 
-### Data Server
+## Data Server
 * [Meteor](https://www.meteor.com/)
-** [V8](https://code.google.com/p/v8/) + [Node](https://nodejs.org/)/[IO.js](https://iojs.org/en/index.html)
-** [MongoDB](https://www.mongodb.org/)
-** [Blaze](https://www.meteor.com/blaze)
+* * [V8](https://code.google.com/p/v8/) + [Node](https://nodejs.org/)/[IO.js](https://iojs.org/en/index.html)
+* * [MongoDB](https://www.mongodb.org/)
+* * [Blaze](https://www.meteor.com/blaze)
 * [PostgreSQL](http://www.postgresql.org/)
 * [Experiment](https://github.com/reactjs/react-meteor) with [ReactJS](https://facebook.github.io/react/) as a replacement for Blaze for constructing the View
 * [REST API](http://en.wikipedia.org/wiki/Representational_state_transfer)
